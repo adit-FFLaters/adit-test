@@ -269,16 +269,130 @@
   }
   .annotation-note b{color:#4a3a0a;}
 
+  /* ===== VIEWPORT TOGGLE (mockup-only control) ===== */
+  .view-toggle{
+    position:sticky;
+    top:0;
+    z-index:50;
+    background:#fff;
+    border-bottom:1px solid var(--line);
+    display:flex;
+    justify-content:center;
+    gap:8px;
+    padding:10px;
+  }
+  .view-toggle button{
+    border:1px solid var(--line);
+    background:var(--cream);
+    color:var(--navy);
+    font-size:13px;
+    font-weight:700;
+    padding:7px 16px;
+    border-radius:999px;
+    cursor:pointer;
+    font-family:inherit;
+  }
+  .view-toggle button.active{
+    background:var(--navy);
+    color:#fff;
+    border-color:var(--navy);
+  }
+  .frame{
+    margin:24px auto 40px;
+  }
+  .is-mobile-wrap{
+    max-width:390px;
+    border:10px solid var(--navy);
+    border-radius:36px;
+    overflow:hidden;
+    box-shadow:0 20px 50px rgba(11,31,58,0.25);
+  }
+  .is-mobile-wrap iframe{
+    display:block;
+    width:100%;
+    border:0;
+  }
+
+  /* ============================================================
+     RESPONSIVE RULES
+     Breakpoints: <=480px (phone), <=760px (tablet/small)
+     ============================================================ */
   @media(max-width:760px){
-    .hero-inner{flex-direction:column;align-items:flex-start;}
-    .hero-meta{margin-left:0;}
-    .articles-grid{grid-template-columns:1fr;}
+    .annotate{font-size:11px;padding:8px 12px;}
+
+    header{padding:14px 20px;}
+    .logo{font-size:17px;}
+    nav{display:none;} /* real site: collapse into hamburger menu */
+
+    .hero{padding:36px 20px 64px;}
+    .hero-inner{
+      flex-direction:column;
+      align-items:flex-start;
+      gap:18px;
+    }
+    .avatar-wrap{width:104px;height:104px;}
+    .avatar{width:96px;height:96px;font-size:32px;}
+    .hero-text h1{font-size:28px;}
+    .hero-text .tagline{font-size:14px;max-width:100%;}
+    .role-pill{font-size:11px;}
+
+    .hero-meta{
+      margin-left:0;
+      width:100%;
+      justify-content:space-between;
+      gap:0;
+      padding-bottom:0;
+      border-top:1px solid rgba(255,255,255,0.12);
+      padding-top:16px;
+    }
+    .hero-meta .num{font-size:18px;}
+    .hero-meta .lbl{font-size:9.5px;}
+
+    main{margin-top:-36px;padding:0 16px 56px;}
+    .bio-card{padding:24px 22px;margin-bottom:20px;border-radius:16px;}
+    .bio-card h2{font-size:18px;}
+    .bio-card p{font-size:14.5px;}
+    .tag{font-size:12px;padding:5px 12px;}
+
+    .section-title{font-size:19px;}
+    .section-sub{font-size:13px;}
+
+    .articles-grid{grid-template-columns:1fr;gap:14px;margin-bottom:24px;}
+    .article-thumb{height:96px;font-size:24px;}
+
+    .cta-strip{
+      flex-direction:column;
+      align-items:flex-start;
+      gap:16px;
+      padding:24px;
+      border-radius:16px;
+    }
+    .cta-btn{width:100%;text-align:center;}
+  }
+
+  @media(max-width:400px){
+    .hero-text h1{font-size:24px;}
+    .hero-meta{flex-wrap:wrap;row-gap:10px;}
   }
 </style>
 </head>
 <body>
 
 <div class="annotate">MOCKUP — NEW PAGE TEMPLATE · matches existing Laters.com nav, color tokens, card + avatar style · <span>not live</span></div>
+
+<div class="view-toggle">
+  <button id="btn-desktop" class="active" onclick="setView('desktop')">🖥️ Desktop</button>
+  <button id="btn-mobile" onclick="setView('mobile')">📱 Mobile</button>
+</div>
+
+<div id="frame" class="frame">
+  <div id="desktop-view"></div>
+  <div id="mobile-view" class="is-mobile-wrap" style="display:none;">
+    <iframe id="mobile-iframe"></iframe>
+  </div>
+</div>
+
+<template id="page-content-template">
 
 <header>
   <div class="logo">laters<span>.</span>com</div>
@@ -364,6 +478,49 @@
   </div>
 
 </main>
+
+</template>
+
+<script>
+  // Populate the desktop pane from the shared template on first load
+  document.getElementById('desktop-view').innerHTML =
+    document.getElementById('page-content-template').innerHTML;
+
+  function setView(mode){
+    const desktopView = document.getElementById('desktop-view');
+    const mobileView = document.getElementById('mobile-view');
+    const btnD = document.getElementById('btn-desktop');
+    const btnM = document.getElementById('btn-mobile');
+
+    if(mode === 'mobile'){
+      desktopView.style.display = 'none';
+      mobileView.style.display = 'block';
+      btnM.classList.add('active');
+      btnD.classList.remove('active');
+
+      const iframe = document.getElementById('mobile-iframe');
+      if(!iframe.dataset.loaded){
+        const tpl = document.getElementById('page-content-template').innerHTML;
+        const styles = document.querySelector('style').outerHTML;
+        const doc = '<!DOCTYPE html><html><head><meta charset="UTF-8">'
+          + '<meta name="viewport" content="width=device-width, initial-scale=1">'
+          + styles + '</head><body>' + tpl + '</body></html>';
+        iframe.srcdoc = doc;
+        iframe.dataset.loaded = '1';
+        iframe.onload = function(){
+          const h = iframe.contentDocument.body.scrollHeight;
+          iframe.style.height = h + 'px';
+        };
+      }
+    } else {
+      desktopView.style.display = 'block';
+      mobileView.style.display = 'none';
+      btnD.classList.add('active');
+      btnM.classList.remove('active');
+    }
+  }
+</script>
+
 
 </body>
 </html>
